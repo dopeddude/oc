@@ -53,42 +53,46 @@ module.exports.create = function(app, conf, repository) {
   app.get(conf.prefix, routes.index);
   app.post(conf.prefix, routes.components);
 
-  app.get(
-    format(
-      '{0}:componentName/:componentVersion{1}',
-      conf.prefix,
-      settings.registry.componentInfoPath
-    ),
-    routes.componentInfo
-  );
-  app.get(
-    format(
-      '{0}:componentName{1}',
-      conf.prefix,
-      settings.registry.componentInfoPath
-    ),
-    routes.componentInfo
-  );
+  // XSS issue PATCH START  //
+  
+  // app.get(
+  //   format(
+  //     '{0}:componentName/:componentVersion{1}',
+  //     conf.prefix,
+  //     settings.registry.componentInfoPath
+  //   ),
+  //   routes.componentInfo
+  // );
+  // app.get(
+  //   format(
+  //     '{0}:componentName{1}',
+  //     conf.prefix,
+  //     settings.registry.componentInfoPath
+  //   ),
+  //   routes.componentInfo
+  // );
 
-  app.get(
-    format(
-      '{0}:componentName/:componentVersion{1}',
-      conf.prefix,
-      settings.registry.componentPreviewPath
-    ),
-    routes.componentPreview
-  );
-  app.get(
-    format(
-      '{0}:componentName{1}',
-      conf.prefix,
-      settings.registry.componentPreviewPath
-    ),
-    routes.componentPreview
-  );
+  // app.get(
+  //   format(
+  //     '{0}:componentName/:componentVersion{1}',
+  //     conf.prefix,
+  //     settings.registry.componentPreviewPath
+  //   ),
+  //   routes.componentPreview
+  // );
+  // app.get(
+  //   format(
+  //     '{0}:componentName{1}',
+  //     conf.prefix,
+  //     settings.registry.componentPreviewPath
+  //   ),
+  //   routes.componentPreview
+  // );
 
-  app.get(conf.prefix + ':componentName/:componentVersion', routes.component);
-  app.get(conf.prefix + ':componentName', routes.component);
+  // app.get(conf.prefix + ':componentName/:componentVersion', routes.component);
+  // app.get(conf.prefix + ':componentName', routes.component);
+
+  // XSS issue PATCH END  //
 
   if (conf.routes) {
     _.forEach(conf.routes, route => {

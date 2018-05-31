@@ -8,6 +8,9 @@ const _ = require('lodash');
 
 const ComponentsCache = require('./components-cache');
 const ComponentsDetails = require('./components-details');
+// Cisco Starship Patch - START //
+const ActiveComponentsDetails = require('./active-components-details');
+// Cisco Starship Patch - END //
 const packageInfo = require('../../../package.json');
 const registerTemplates = require('./register-templates');
 const S3 = require('./s3');
@@ -21,6 +24,9 @@ module.exports = function(conf) {
   const repositorySource = conf.local ? 'local repository' : 's3 cdn';
   const componentsCache = ComponentsCache(conf, cdn);
   const componentsDetails = ComponentsDetails(conf, cdn);
+  // Cisco Starship Patch - START //
+  const activeComponentsDetails = ActiveComponentsDetails(conf, cdn);
+  // Cisco Starship Patch - END //
 
   const getFilePath = (component, version, filePath) =>
     `${conf.s3.componentsDir}/${component}/${version}/${filePath}`;
@@ -217,6 +223,24 @@ module.exports = function(conf) {
 
       componentsDetails.get(callback);
     },
+    // Cisco Starship Patch - START //
+    // API to get active components details for all the scope
+    getActiveComponentsDetails: callback => {
+      if (conf.local) {
+        return callback();
+      }
+
+      activeComponentsDetails.get(callback);
+    },
+    //API to activate a component
+    activateComponent: (data, callback) => {
+      activeComponentsDetails.activate(data, callback);
+    },
+    // API to get the active component
+    getActiveComponentVersion: (scope, componentName, callback) => {
+      activeComponentsDetails.getActiveVersion(scope, componentName, callback);
+    },
+    // Cisco Starship Patch - END //
     getComponentVersions: (componentName, callback) => {
       if (conf.local) {
         return local.getComponentVersions(componentName, callback);
@@ -278,6 +302,12 @@ module.exports = function(conf) {
         componentsDetails.refresh(componentsList, err =>
           callback(err, componentsList)
         );
+        // Cisco Starship Patch - START //
+        // This will initialize the active components details json in s3
+        activeComponentsDetails.load(componentsList, err =>
+          callback(err, componentsList)
+        );
+        // Cisco Starship Patch - END //
       });
     },
     publishComponent: (

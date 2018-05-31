@@ -101,7 +101,8 @@ module.exports = function(options) {
             }
           }
 
-          callback(null, { app: self.app, server });
+          //callback(null, { app: self.app, server }); //original
+          callback(null, { app: self.app, server, repository }); //bdoshi
         });
 
         server.on('error', message => {

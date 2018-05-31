@@ -1,5 +1,4 @@
 'use strict';
-const colors = require('colors/safe');
 
 module.exports = {
   commands: {
@@ -20,13 +19,13 @@ module.exports = {
       COMPONENT_NAME_NOT_VALID:
         "The component's name contains invalid characters. Allowed are alphanumeric, _, -",
       COMPONENT_NAME_NOT_VALID_CODE: 'name_not_valid',
-      COMPONENT_NOT_FOUND: 'Component "{0}" not found on {1}',
+      COMPONENT_NOT_FOUND: 'Requested component not found on {1}',
       COMPONENT_PUBLISHNAME_CONFLICT:
         'Component name conflict. Ensure package.json and components folder name are equal.',
       COMPONENT_PUBLISHVALIDATION_FAIL: 'Component validation failed: {0}',
       COMPONENT_PUBLISHVALIDATION_FAIL_CODE: 'not_allowed',
       COMPONENT_VERSION_NOT_FOUND:
-        'Component "{0}" with version "{1}" not found on {2}',
+        'Component with requested version not found on {2}',
       COMPONENT_VERSION_ALREADY_FOUND:
         'Component "{0}" with version "{1}" can\'t be published to {2} because a component with the same name and version already exists',
       COMPONENT_VERSION_ALREADY_FOUND_CODE: 'already_exists',
@@ -86,12 +85,9 @@ module.exports = {
       PLUGIN_NOT_VALID: 'Plugin {0} is not valid',
       RESOLVING_ERROR: 'component resolving error',
       TEMPLATE_NOT_FOUND: 'Template {0} not found',
-      TEMPLATE_NOT_VALID: '{0} is not a valid oc-template',
-      TEMPLATE_NOT_SUPPORTED: '{0} is not a supported oc-template'
+      TEMPLATE_NOT_VALID: '{0} is not a valid oc-template'
     },
     cli: {
-      scaffoldError: (url, error) =>
-        `Scaffolding failed. Please open an issue on ${url} with the following information: ${error}`,
       COMPONENT_HREF_NOT_FOUND:
         "The specified path is not a valid component's url",
       COMPONENTS_NOT_FOUND: 'no components found in specified path',
@@ -122,7 +118,8 @@ module.exports = {
       SERVERJS_DEPENDENCY_NOT_DECLARED:
         'Missing dependencies from package.json => {0}',
       TEMPLATE_NOT_FOUND: 'file {0} not found',
-      TEMPLATE_TYPE_NOT_VALID: 'the template is not valid',
+      TEMPLATE_TYPE_NOT_VALID:
+        'the template is not valid. Allowed values are handlebars and jade',
       TEMPLATE_DEP_MISSING:
         'Template dependency missing. To fix it run:\n\nnpm install --save-dev {0}-compiler --prefix {1}\n\n'
     },
@@ -138,33 +135,9 @@ module.exports = {
   },
   messages: {
     cli: {
-      initSuccess: (componentName, componentPath) => `${colors.green(
-        'Success! Created ' + componentName + ' at ' + componentPath
-      )} 
-
-From here you can run several commands
-
-  ${colors.green('oc --help')}
-    To see a detailed list of all the commands available
-
-We suggest that you begin by typing:
-
-  ${colors.green('oc dev . 3030')}
-
-If you have questions, issues or feedback about OpenComponents, please, join us on Gitter:
-  ${colors.green('https://gitter.im/opentable/oc')}
-
-Happy coding
-
-`,
-      installCompiler: compiler => `Installing ${compiler} from npm...`,
-      installCompilerSuccess: (template, compiler, version) =>
-        `${colors.green('✔')} Installed ${compiler} [${template} v${version}]`,
-      legacyTemplateDeprecationWarning: (legacyType, newType) =>
-        `Template-type "${legacyType}" has been deprecated and is now replaced by "${newType}"`,
       CHANGES_DETECTED: 'Changes detected on file: {0}',
       CHECKING_DEPENDENCIES: 'Ensuring dependencies are loaded...',
-      COMPONENT_INITED: 'Success! Created "{0}"',
+      COMPONENT_INITED: 'Component "{0}" created',
       COMPRESSING: 'Compressing -> {0}',
       COMPRESSED: 'Compressed -> {0}',
       ENTER_PASSWORD: 'Enter password:',
