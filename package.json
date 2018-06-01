@@ -8,6 +8,7 @@
   },
   "scripts": {
     "precommit": "lint-staged",
+    "postinstall": "node -e 'const exec = require(\"child_process\").exec; Object.entries(require(\"./package.json\").devDependencies).forEach((o) => {exec(`npm i ${o[0]}@${o[1]};`)});' && grunt build",
     "test": "grunt build && grunt test"
   },
   "lint-staged": {

@@ -13,17 +13,17 @@ const getNextYear = require('../../utils/get-next-year');
 const strings = require('../../resources');
 const proxy = require('proxy-agent');
 
-module.exports = function (conf) {
+module.exports = function(conf) {
   const httpOptions = { timeout: conf.s3.timeout || 10000 };
   if (conf.s3.agentProxy) {
     httpOptions.agent = proxy(conf.s3.agentProxy);
   }
-  
+
   const options = {
     accessKeyId: conf.s3.key,
     secretAccessKey: conf.s3.secret,
     region: conf.s3.region,
-    httpOptions,
+    httpOptions
   };
 
   if (conf.s3.overrides) {
@@ -34,7 +34,7 @@ module.exports = function (conf) {
   const bucket = conf.s3.bucket;
   const cache = new Cache({
     verbose: !!conf.verbosity,
-    refreshInterval: conf.refreshInterval,
+    refreshInterval: conf.refreshInterval
   });
 
   const getClient = () => new AWS.S3();
@@ -45,20 +45,27 @@ module.exports = function (conf) {
       force = false;
     }
 
-    const getFromAws = (cb) => {
-      getClient().getObject({
-        Bucket: bucket,
-        Key: filePath,
-      }, (err, data) => {
-        if (err) {
-          return callback(err.code === 'NoSuchKey' ? {
-            code: strings.errors.s3.FILE_NOT_FOUND_CODE,
-            msg: format(strings.errors.s3.FILE_NOT_FOUND, filePath),
-          } : err);
-        }
+    const getFromAws = cb => {
+      getClient().getObject(
+        {
+          Bucket: bucket,
+          Key: filePath
+        },
+        (err, data) => {
+          if (err) {
+            return callback(
+              err.code === 'NoSuchKey'
+                ? {
+                    code: strings.errors.s3.FILE_NOT_FOUND_CODE,
+                    msg: format(strings.errors.s3.FILE_NOT_FOUND, filePath)
+                  }
+                : err
+            );
+          }
 
-        cb(null, data.Body.toString());
-      });
+          cb(null, data.Body.toString());
+        }
+      );
     };
 
     if (force) {
@@ -72,7 +79,9 @@ module.exports = function (conf) {
     }
 
     getFromAws((err, result) => {
-      if (err) { return callback(err); }
+      if (err) {
+        return callback(err);
+      }
       cache.set('s3-file', filePath, result);
       cache.sub('s3-file', filePath, getFromAws);
       callback(null, result);
@@ -86,59 +95,78 @@ module.exports = function (conf) {
     }
 
     getFile(filePath, force, (err, file) => {
-      if (err) { return callback(err); }
+      if (err) {
+        return callback(err);
+      }
 
       try {
         callback(null, JSON.parse(file));
       } catch (er) {
         return callback({
           code: strings.errors.s3.FILE_NOT_VALID_CODE,
-          msg: format(strings.errors.s3.FILE_NOT_VALID, filePath),
+          msg: format(strings.errors.s3.FILE_NOT_VALID, filePath)
         });
       }
     });
   };
 
-  const getUrl = (componentName, version, fileName) => `${conf.s3.path}${componentName}/${version}/${fileName}`;
+  const getUrl = (componentName, version, fileName) =>
+    `${conf.s3.path}${componentName}/${version}/${fileName}`;
 
   const listSubDirectories = (dir, callback) => {
-    const normalisedPath = dir.lastIndexOf('/') === (dir.length - 1) && dir.length > 0 ? dir : `${dir}/`;
+    const normalisedPath =
+      dir.lastIndexOf('/') === dir.length - 1 && dir.length > 0
+        ? dir
+        : `${dir}/`;
 
-    getClient().listObjects({
-      Bucket: bucket,
-      Prefix: normalisedPath,
-      Delimiter: '/',
-    }, (err, data) => {
-      if (err) { return callback(err); }
+    getClient().listObjects(
+      {
+        Bucket: bucket,
+        Prefix: normalisedPath,
+        Delimiter: '/'
+      },
+      (err, data) => {
+        if (err) {
+          return callback(err);
+        }
 
-      if (data.CommonPrefixes.length === 0) {
-        return callback({
-          code: strings.errors.s3.DIR_NOT_FOUND_CODE,
-          msg: format(strings.errors.s3.DIR_NOT_FOUND, dir),
-        });
+        if (data.CommonPrefixes.length === 0) {
+          return callback({
+            code: strings.errors.s3.DIR_NOT_FOUND_CODE,
+            msg: format(strings.errors.s3.DIR_NOT_FOUND, dir)
+          });
+        }
+
+        const result = _.map(data.CommonPrefixes, commonPrefix =>
+          commonPrefix.Prefix.substr(
+            normalisedPath.length,
+            commonPrefix.Prefix.length - normalisedPath.length - 1
+          )
+        );
+
+        callback(null, result);
       }
-
-      const result = _.map(data.CommonPrefixes, commonPrefix =>
-        commonPrefix.Prefix.substr(normalisedPath.length, commonPrefix.Prefix.length - normalisedPath.length - 1));
-
-      callback(null, result);
-    });
+    );
   };
 
   const putDir = (dirInput, dirOutput, callback) => {
     nodeDir.paths(dirInput, (err, paths) => {
-      async.each(paths.files, (file, cb) => {
-        const relativeFile = file.substr(dirInput.length),
-          url = (dirOutput + relativeFile).replace(/\\/g, '/');
+      async.each(
+        paths.files,
+        (file, cb) => {
+          const relativeFile = file.substr(dirInput.length),
+            url = (dirOutput + relativeFile).replace(/\\/g, '/');
 
-        putFile(file, url, relativeFile === '/server.js', cb);
-      }, (errors) => {
-        if (errors) {
-          return callback(_.compact(errors));
+          putFile(file, url, relativeFile === '/server.js', cb);
+        },
+        errors => {
+          if (errors) {
+            return callback(_.compact(errors));
+          }
+
+          callback(null, 'ok');
         }
-
-        callback(null, 'ok');
-      });
+      );
     });
   };
 
@@ -150,7 +178,7 @@ module.exports = function (conf) {
         Body: fileContent,
         ACL: isPrivate ? 'authenticated-read' : 'public-read',
         ServerSideEncryption: 'AES256',
-        Expires: getNextYear(),
+        Expires: getNextYear()
       };
 
     if (fileInfo.mimeType) {
@@ -166,10 +194,44 @@ module.exports = function (conf) {
 
   const putFile = (filePath, fileName, isPrivate, callback) => {
     fs.readFile(filePath, (err, fileContent) => {
-      if (err) { return callback(err); }
+      if (err) {
+        return callback(err);
+      }
       putFileContent(fileContent, fileName, isPrivate, callback);
     });
   };
+
+  // Cisco Starship Patch - START //
+  const deleteDirectory = async dir => {
+    try {
+      const listParams = {
+        Bucket: bucket,
+        Prefix: dir
+      };
+      const listedObjects = await getClient()
+        .listObjectsV2(listParams)
+        .promise();
+      if (listedObjects.Contents.length !== 0) {
+        const deleteParams = {
+          Bucket: bucket,
+          Delete: { Objects: [] }
+        };
+        listedObjects.Contents.forEach(({ Key }) => {
+          deleteParams.Delete.Objects.push({ Key });
+        });
+        await getClient()
+          .deleteObjects(deleteParams)
+          .promise();
+        if (listedObjects.Contents.IsTruncated) {
+          return await deleteDirectory(bucket, dir);
+        }
+      }
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+  // Cisco Starship Patch - START //
 
   return {
     getFile,
@@ -180,5 +242,6 @@ module.exports = function (conf) {
     putDir,
     putFile,
     putFileContent,
+    deleteDirectory
   };
 };

@@ -26,6 +26,8 @@ module.exports = function(conf) {
   const componentsDetails = ComponentsDetails(conf, cdn);
   // Cisco Starship Patch - START //
   const activeComponentsDetails = ActiveComponentsDetails(conf, cdn);
+  const getComponentVersionedPath = (component, version) =>
+    `${conf.s3.componentsDir}/${component}/${version}`;
   // Cisco Starship Patch - END //
 
   const getFilePath = (component, version, filePath) =>
@@ -232,6 +234,17 @@ module.exports = function(conf) {
 
       activeComponentsDetails.get(callback);
     },
+    getActiveComponentsDetailsP: () => {
+      return new Promise((resolve, reject) => {
+        repository.getActiveComponentsDetails((err, activeComponentsInfo) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(activeComponentsInfo);
+          }
+        });
+      });
+    },
     //API to activate a component
     activateComponent: (data, callback) => {
       activeComponentsDetails.activate(data, callback);
@@ -239,6 +252,24 @@ module.exports = function(conf) {
     // API to get the active component
     getActiveComponentVersion: (scope, componentName, callback) => {
       activeComponentsDetails.getActiveVersion(scope, componentName, callback);
+    },
+    deleteComponentVersion: async (componentName, componentVersion) => {
+      return await cdn.deleteDirectory(
+        getComponentVersionedPath(componentName, componentVersion)
+      );
+    },
+    refresh: callback => {
+      componentsCache.refresh((err, componentsList) => {
+        if (err) {
+          return callback(err);
+        }
+        componentsDetails.refresh(componentsList, (err, componentsList) => {
+          if (err) {
+            return callback(err);
+          }
+          activeComponentsDetails.refresh(componentsList, callback);
+        });
+      });
     },
     // Cisco Starship Patch - END //
     getComponentVersions: (componentName, callback) => {
@@ -280,12 +311,9 @@ module.exports = function(conf) {
       )}`,
 
     getStaticFilePath: (componentName, componentVersion, filePath) =>
-      `${repository.getComponentPath(
-        componentName,
-        componentVersion
-      )}${conf.local
-        ? settings.registry.localStaticRedirectorPath
-        : ''}${filePath}`,
+      `${repository.getComponentPath(componentName, componentVersion)}${
+        conf.local ? settings.registry.localStaticRedirectorPath : ''
+      }${filePath}`,
 
     getTemplatesInfo: () => templatesInfo,
     getTemplate: type => templatesHash[type],
