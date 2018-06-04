@@ -227,6 +227,17 @@ module.exports = function(conf) {
     },
     // Cisco Starship Patch - START //
     // API to get active components details for all the scope
+    getComponentsDetailsP: () => {
+      return new Promise((resolve, reject) => {
+        repository.getComponentsDetails((err, componentsDetails) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(componentsDetails);
+          }
+        });
+      });
+    },
     getActiveComponentsDetails: callback => {
       if (conf.local) {
         return callback();
@@ -236,13 +247,15 @@ module.exports = function(conf) {
     },
     getActiveComponentsDetailsP: () => {
       return new Promise((resolve, reject) => {
-        repository.getActiveComponentsDetails((err, activeComponentsInfo) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(activeComponentsInfo);
+        repository.getActiveComponentsDetails(
+          (err, activeComponentsDetails) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(activeComponentsDetails);
+            }
           }
-        });
+        );
       });
     },
     //API to activate a component
