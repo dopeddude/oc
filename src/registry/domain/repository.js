@@ -267,9 +267,10 @@ module.exports = function(conf) {
       activeComponentsDetails.getActiveVersion(scope, componentName, callback);
     },
     deleteComponentVersion: async (componentName, componentVersion) => {
-      return await cdn.deleteDirectory(
+      let wasDeleteSuccessful = await cdn.deleteDirectory(
         getComponentVersionedPath(componentName, componentVersion)
       );
+      return wasDeleteSuccessful;
     },
     refresh: callback => {
       componentsCache.refresh((err, componentsList) => {
@@ -280,8 +281,25 @@ module.exports = function(conf) {
           if (err) {
             return callback(err);
           }
-          activeComponentsDetails.refresh(componentsList, callback);
+          //activeComponentsDetails.refresh(componentsList, callback);
+          // activeComponentsDetails.load(componentsList, err =>
+          //   callback(err, componentsList)
+          // );
+          callback(err, componentsList);
         });
+      });
+    },
+    refreshP: () => {
+      return new Promise((resolve, reject) => {
+        repository.refresh(
+          (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(true);
+            }
+          }
+        );
       });
     },
     // Cisco Starship Patch - END //

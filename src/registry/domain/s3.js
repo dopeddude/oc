@@ -219,9 +219,10 @@ module.exports = function(conf) {
         listedObjects.Contents.forEach(({ Key }) => {
           deleteParams.Delete.Objects.push({ Key });
         });
-        await getClient()
+        let deletedObjectsInfo = await getClient()
           .deleteObjects(deleteParams)
           .promise();
+        console.info(`deletedObjectsInfo: `, deletedObjectsInfo);
         if (listedObjects.Contents.IsTruncated) {
           return await deleteDirectory(bucket, dir);
         }
