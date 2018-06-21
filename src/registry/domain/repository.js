@@ -274,14 +274,15 @@ module.exports = function(conf) {
     },
     refresh: callback => {
       componentsCache.refresh((err, componentsList) => {
+        callback(err, componentsList);
         if (err) {
           return callback(err);
         }
         componentsDetails.refresh(componentsList, (err, componentsList) => {
-          if (err) {
-            return callback(err);
-          }
-          //activeComponentsDetails.refresh(componentsList, callback);
+          // if (err) {
+          //   return callback(err);
+          // }
+          // activeComponentsDetails.refresh(componentsList, callback);
           // activeComponentsDetails.load(componentsList, err =>
           //   callback(err, componentsList)
           // );
@@ -291,15 +292,13 @@ module.exports = function(conf) {
     },
     refreshP: () => {
       return new Promise((resolve, reject) => {
-        repository.refresh(
-          (err) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(true);
-            }
+        repository.refresh(err => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(true);
           }
-        );
+        });
       });
     },
     // Cisco Starship Patch - END //
