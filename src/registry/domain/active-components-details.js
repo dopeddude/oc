@@ -14,7 +14,8 @@ module.exports = (conf, cdn) => {
     return callback(code);
   };
 
-  const filePath = () => `${conf.s3.componentsDir}/active-components-details.json`;
+  const filePath = () =>
+    `${conf.s3.componentsDir}/active-components-details.json`;
 
   const getFromJson = callback => cdn.getJson(filePath(), true, callback);
 
@@ -64,38 +65,66 @@ module.exports = (conf, cdn) => {
     cdn.putFileContent(JSON.stringify(data), filePath(), true, callback);
 
   const activateComponent = (data, callback) => {
-
     try {
-      let jsonStrData = JSON.stringify(data);
+      const jsonStrData = JSON.stringify(data);
       const componentsData = JSON.parse(jsonStrData);
-      let desiredScope = componentsData["scope"];
-      let components = componentsData["components"];
+      const desiredScope = componentsData['scope'];
+      const components = componentsData['components'];
 
       const scopeData = data;
       getFromJson((jsonErr, details) => {
+        if (jsonErr) {
+          return callback(jsonErr);
+        }
         const activeDetails = details;
-        if (!activeDetails["activeVersions"][desiredScope]) {
-          activeDetails["activeVersions"][desiredScope] = {};
+        if (!activeDetails['activeVersions'][desiredScope]) {
+          activeDetails['activeVersions'][desiredScope] = {};
         }
         _.forEach(components, (component, i) => {
-          activeDetails["activeVersions"][desiredScope][component["name"]] = component["version"];
+          activeDetails['activeVersions'][desiredScope][component['name']] =
+            component['version'];
         });
         //activeDetails.activeVersions[scope][componentName] = componentVersion;
         save(activeDetails, (err, savedDetails) => {
-            if (err) {
-              console.log("Error while saving active versions");
-              callback(err);
-            } else {
-              console.log("Active Versions saved successfully");
-              callback(null, savedDetails);
-            }
+          if (err) {
+            console.log('Error while saving active versions');
+            callback(err);
+          } else {
+            console.log('Active Versions saved successfully');
+            callback(null, savedDetails);
           }
-        );
+        });
       });
-    } catch(e) {
+    } catch (e) {
       callback(e);
     }
+  };
 
+  const deleteScope = (scopeName, callback) => {
+    try {
+      getFromJson((jsonErr, activeDetails) => {
+        if (jsonErr) {
+          return callback(jsonErr);
+        }
+        if (
+          activeDetails['activeVersions'] &&
+          activeDetails['activeVersions'][scopeName]
+        ) {
+          delete activeDetails['activeVersions'][scopeName];
+        }
+        save(activeDetails, (err, savedDetails) => {
+          if (err) {
+            console.log('Error while saving active versions');
+            callback(err);
+          } else {
+            console.log('Active Versions saved successfully');
+            callback(null, savedDetails);
+          }
+        });
+      });
+    } catch (e) {
+      callback(e);
+    }
   };
 
   const getActiveComponentVersion = (scope, componentName, callback) => {
@@ -105,10 +134,12 @@ module.exports = (conf, cdn) => {
         callback(jsonErr);
         return;
       }
-      if (details.activeVersions[scope] && details.activeVersions[scope][componentName])
+      if (
+        details.activeVersions[scope] &&
+        details.activeVersions[scope][componentName]
+      )
         activeVersion = details.activeVersions[scope][componentName];
-      else
-        activeVersion = details.activeVersions["default"][componentName];
+      else activeVersion = details.activeVersions['default'][componentName];
       callback(activeVersion);
     });
     return activeVersion;
@@ -142,16 +173,20 @@ module.exports = (conf, cdn) => {
 
   const load = (componentsList, callback) => {
     getFromJson((jsonErr, details) => {
-       if (jsonErr && jsonErr.code == strings.errors.s3.FILE_NOT_FOUND_CODE) {
-          save(JSON.parse(activeComponents), saveErr => {
-            if (saveErr) {
-              return returnError('active_components_details_save', saveErr, callback);
-            }
-            callback(null, componentsList);
-          });
-        } else {
-          callback(null, details);
-        }
+      if (jsonErr && jsonErr.code == strings.errors.s3.FILE_NOT_FOUND_CODE) {
+        save(JSON.parse(activeComponents), saveErr => {
+          if (saveErr) {
+            return returnError(
+              'active_components_details_save',
+              saveErr,
+              callback
+            );
+          }
+          callback(null, componentsList);
+        });
+      } else {
+        callback(null, details);
+      }
     });
   };
 
@@ -159,6 +194,7 @@ module.exports = (conf, cdn) => {
     get: getFromJson,
     load: load,
     activate: activateComponent,
+    deleteScope: deleteScope,
     getActiveVersion: getActiveComponentVersion,
     refresh
   };

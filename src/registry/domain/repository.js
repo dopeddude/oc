@@ -262,6 +262,31 @@ module.exports = function(conf) {
     activateComponent: (data, callback) => {
       activeComponentsDetails.activate(data, callback);
     },
+    activateComponentP: data => {
+      return new Promise((resolve, reject) => {
+        repository.activateComponent(data, (err, activeComponentsDetails) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(activeComponentsDetails);
+          }
+        });
+      });
+    },
+    deleteScope: (scopeName, callback) => {
+      activeComponentsDetails.deleteScope(scopeName, callback);
+    },
+    deleteScopeP: scopeName => {
+      return new Promise((resolve, reject) => {
+        repository.deleteScope(scopeName, (err, response) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(response);
+          }
+        });
+      });
+    },
     // API to get the active component
     getActiveComponentVersion: (scope, componentName, callback) => {
       activeComponentsDetails.getActiveVersion(scope, componentName, callback);
