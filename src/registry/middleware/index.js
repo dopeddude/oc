@@ -12,6 +12,7 @@ const fileUploads = require('./file-uploads');
 const requestHandler = require('./request-handler');
 
 module.exports.bind = function(app, options) {
+  const modules = options.modules || {};
   app.set('port', options.port);
   app.set('json spaces', 0);
 
@@ -23,7 +24,7 @@ module.exports.bind = function(app, options) {
   app.use(requestHandler());
   app.use(bodyParser.json({ inflate: true }));
   app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(cors);
+  app.use(modules.cors ? modules.cors : cors);
   app.use(fileUploads);
   app.use(baseUrlHandler);
   app.use(discoveryHandler);
