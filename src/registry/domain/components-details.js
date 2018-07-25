@@ -20,6 +20,24 @@ module.exports = (conf, cdn) => {
     const details = _.extend({}, _.cloneDeep(options.details));
     details.components = details.components || {};
 
+    try {
+      const componentsCacheList = options.componentsList.components;
+      Object.keys(details.components).forEach(((componentName) => {
+        const publishedVersions = Object.keys(details.components[componentName]);
+        publishedVersions.forEach((publishedVersion) => {
+          if (componentsCacheList[componentName] instanceof Array) {
+            if (componentsCacheList[componentName].indexOf(publishedVersion) === -1) {
+              details.components[componentName][publishedVersion]["onDiskPresence"] = false;
+            } else {
+              details.components[componentName][publishedVersion]["onDiskPresence"] = true;
+            }
+          }
+        });
+      }));
+    } catch (error) {
+      // console.error("Error on sanitizing the components Details", error);
+    }
+
     async.eachOfSeries(
       options.componentsList.components,
       (versions, name, done) => {
