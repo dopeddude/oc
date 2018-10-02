@@ -351,19 +351,29 @@ module.exports = function(conf) {
         callback
       );
     },
-    getStaticClientPath: () =>
-      `https:${conf.s3.path}${getFilePath(
+    getStaticClientPath: () => {
+      let s3Path = conf.s3.path;
+      if (!s3Path.startsWith('http')) {
+        s3Path = 'https://' + s3Path;
+      }
+      return `${s3Path}${getFilePath(
         'oc-client',
         packageInfo.version,
         'src/oc-client.min.js'
-      )}`,
+      )}`;
+    },
 
-    getStaticClientMapPath: () =>
-      `https:${conf.s3.path}${getFilePath(
+    getStaticClientMapPath: () => {
+      let s3Path = conf.s3.path;
+      if (!s3Path.startsWith('http')) {
+        s3Path = 'https://' + s3Path;
+      }
+      return `${s3Path}${getFilePath(
         'oc-client',
         packageInfo.version,
         'src/oc-client.min.map'
-      )}`,
+      )}`;
+    },
 
     getStaticFilePath: (componentName, componentVersion, filePath) =>
       `${repository.getComponentPath(componentName, componentVersion)}${
