@@ -354,7 +354,7 @@ module.exports = function(conf) {
     getStaticClientPath: () => {
       let s3Path = conf.s3.path;
       if (!s3Path.startsWith('http')) {
-        s3Path = 'https://' + s3Path;
+        s3Path = 'https:' + s3Path;
       }
       return `${s3Path}${getFilePath(
         'oc-client',
@@ -366,7 +366,7 @@ module.exports = function(conf) {
     getStaticClientMapPath: () => {
       let s3Path = conf.s3.path;
       if (!s3Path.startsWith('http')) {
-        s3Path = 'https://' + s3Path;
+        s3Path = 'https:' + s3Path;
       }
       return `${s3Path}${getFilePath(
         'oc-client',
