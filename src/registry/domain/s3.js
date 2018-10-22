@@ -208,9 +208,11 @@ module.exports = function(conf) {
         Bucket: bucket,
         Prefix: dir
       };
+      console.info(`deleteDirectory@${__filename} - listParams: ${JSON.stringify(listParams)}`);
       const listedObjects = await getClient()
         .listObjectsV2(listParams)
         .promise();
+      console.info(`deleteDirectory@${__filename} - listedObjects: ${JSON.stringify(listedObjects)}`);
       if (listedObjects.Contents.length !== 0) {
         const deleteParams = {
           Bucket: bucket,
@@ -222,7 +224,7 @@ module.exports = function(conf) {
         let deletedObjectsInfo = await getClient()
           .deleteObjects(deleteParams)
           .promise();
-        console.info(`deletedObjectsInfo: `, deletedObjectsInfo);
+        console.info(`deleteDirectory@${__filename} - deletedObjectsInfo: ${JSON.stringify(deletedObjectsInfo)}`);
         if (listedObjects.Contents.IsTruncated) {
           return await deleteDirectory(bucket, dir);
         }

@@ -35,7 +35,7 @@ module.exports = (conf, cdn) => {
         });
       }));
     } catch (error) {
-      // console.error("Error on sanitizing the components Details", error);
+      console.error("Error on sanitizing the components Details", error);
     }
 
     async.eachOfSeries(

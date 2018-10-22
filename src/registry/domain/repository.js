@@ -10,6 +10,7 @@ const ComponentsCache = require('./components-cache');
 const ComponentsDetails = require('./components-details');
 // Cisco Starship Patch - START //
 const ActiveComponentsDetails = require('./active-components-details');
+const DevAccessDetails = require('./dev-access-details');
 // Cisco Starship Patch - END //
 const packageInfo = require('../../../package.json');
 const registerTemplates = require('./register-templates');
@@ -26,6 +27,7 @@ module.exports = function(conf) {
   const componentsDetails = ComponentsDetails(conf, cdn);
   // Cisco Starship Patch - START //
   const activeComponentsDetails = ActiveComponentsDetails(conf, cdn);
+  const devAccessDetails = DevAccessDetails(conf, cdn);
   const getComponentVersionedPath = (component, version) =>
     `${conf.s3.componentsDir}/${component}/${version}`;
   // Cisco Starship Patch - END //
@@ -279,6 +281,20 @@ module.exports = function(conf) {
     deleteScopeP: scopeName => {
       return new Promise((resolve, reject) => {
         repository.deleteScope(scopeName, (err, response) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(response);
+          }
+        });
+      });
+    },
+    updateDevAccessLog: (logMessage, callback) => {
+      devAccessDetails.log(logMessage, callback);
+    },
+    updateDevAccessLogP: logMessage => {
+      return new Promise((resolve, reject) => {
+        repository.updateDevAccessLog(logMessage, (err, response) => {
           if (err) {
             reject(err);
           } else {
