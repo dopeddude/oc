@@ -1,7 +1,8 @@
 'use strict';
 
 module.exports = (conf, cdn) => {
-  const filePath = () => `${conf.s3.componentsDir}/dev-access.log`;
+  // TODO (ashwkum4) - Add code to rotate the file log
+  const filePath = () => `${conf.s3.componentsDir}/update.log`;
   const getFile = callback => cdn.getFile(filePath(), true, callback);
   const save = (data, callback) =>
     cdn.putFileContent(data, filePath(), true, callback);
