@@ -9,16 +9,25 @@ module.exports = (conf, cdn) => {
     return `${conf.s3.componentsDir}/${fileName}`;
   };
   const getFile = callback => cdn.getFile(filePath(), true, callback);
+
   const save = (data, callback) =>
     cdn.putFileContent(data, filePath(), true, callback);
 
   const log = (logMessage, callback) => {
     getFile((getFileErr, details) => {
+      console.info("getFileErr: ", getFileErr);
+      console.info("Hello: ", JSON.stringify(getFileErr));
+      let newFileContent = '';
       if (getFileErr) {
-        callback(getFileErr);
-        return;
+        if (getFileErr.code === 'file_not_found') {
+          newFileContent = `${logMessage}`;
+        } else {
+          callback(getFileErr);
+          return;
+        }
+      } else {
+        newFileContent = `${details}\n${logMessage}`;
       }
-      const newFileContent = `${details}\n${logMessage}`;
       save(newFileContent, saveErr => {
         if (saveErr) {
           callback(saveErr);
