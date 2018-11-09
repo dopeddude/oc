@@ -56,7 +56,7 @@ const build = {
       qs += '?';
 
       _.forEach(parameters, (parameter, key) => {
-        qs += key + '=' + encodeURIComponent(parameter) + '&';
+        qs += encodeURIComponent(key) + '=' + encodeURIComponent(parameter) + '&';
       });
 
       if (_.keys(parameters).length > 0) {

@@ -15,12 +15,10 @@ module.exports = (conf, cdn) => {
 
   const log = (logMessage, callback) => {
     getFile((getFileErr, details) => {
-      console.info("getFileErr: ", getFileErr);
-      console.info("Hello: ", JSON.stringify(getFileErr));
       let newFileContent = '';
       if (getFileErr) {
         if (getFileErr.code === 'file_not_found') {
-          newFileContent = `${logMessage}`;
+          newFileContent = logMessage;
         } else {
           callback(getFileErr);
           return;
