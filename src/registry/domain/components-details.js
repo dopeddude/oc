@@ -28,6 +28,9 @@ module.exports = (conf, cdn) => {
           if (componentsCacheList[componentName] instanceof Array) {
             if (componentsCacheList[componentName].indexOf(publishedVersion) === -1) {
               details.components[componentName][publishedVersion]["onDiskPresence"] = false;
+              if (publishedVersion.startsWith('0.0.1-') === true) {
+                delete details.components[componentName][publishedVersion];
+              }
             } else {
               details.components[componentName][publishedVersion]["onDiskPresence"] = true;
             }
