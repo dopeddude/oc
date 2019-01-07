@@ -30,13 +30,16 @@ module.exports = function(userAgent) {
     return result;
   }
 
-  const cliVersion = matchVersion[1];
-  if (semver.lt(cliVersion, packageInfo.version)) {
-    result.error = error;
-    result.error.code = 'old_version';
-    result.error.cliVersion = cliVersion;
-    return result;
-  }
+  // As the oc-client is in active development so the check is disabled
+  // So that we do not have to upgrade the oc-client version every now and then 
+  // on the control nodes and also on the local developer machines
+  // const cliVersion = matchVersion[1];
+  // if (semver.lt(cliVersion, packageInfo.version)) {
+  //   result.error = error;
+  //   result.error.code = 'old_version';
+  //   result.error.cliVersion = cliVersion;
+  //   return result;
+  // }
 
   result.isValid = true;
   return result;
