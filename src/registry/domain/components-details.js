@@ -28,7 +28,8 @@ module.exports = (conf, cdn) => {
           if (componentsCacheList[componentName] instanceof Array) {
             if (componentsCacheList[componentName].indexOf(publishedVersion) === -1) {
               console.info('non existent publishedVersion: ', publishedVersion);
-              if (publishedVersion.startsWith('0.0.1-') === true) {
+              if (!publishedVersion.startsWith('1.0.')) {
+                // Delete all non-master versions mentions from components-details.js when they do not exist on s3
                 delete details.components[componentName][publishedVersion];
               } else {
                 details.components[componentName][publishedVersion]["onDiskPresence"] = false;
