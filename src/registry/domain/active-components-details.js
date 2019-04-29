@@ -71,7 +71,6 @@ module.exports = (conf, cdn) => {
       const desiredScope = componentsData['scope'];
       const components = componentsData['components'];
 
-      const scopeData = data;
       getFromJson((jsonErr, details) => {
         if (jsonErr) {
           return callback(jsonErr);
@@ -85,7 +84,29 @@ module.exports = (conf, cdn) => {
             component['version'];
         });
         //activeDetails.activeVersions[scope][componentName] = componentVersion;
-        save(activeDetails, (err, savedDetails) => {
+        const sortedActiveVersions = Object.create(null);
+        const nonDefaultEndPointScopes = /^(imc-.*|hx-.*|ucsm-.*|ucsd-.*)$/i;
+        Object.keys(activeDetails['activeVersions']).sort((a, b) => {
+          console.info('Inside the custom compare of scopes - a: ', a, ', b: ', b);
+          if (a === 'default') {
+            return -1;
+          } else if (nonDefaultEndPointScopes.test(a) && !nonDefaultEndPointScopes.test(b)) {
+            return -1;
+          } else if (!nonDefaultEndPointScopes.test(a) && nonDefaultEndPointScopes.test(b)) {
+            return 1;
+          } else {
+            return a.localeCompare(b);
+          }
+        }).forEach(scopeName => {
+          sortedActiveVersions[scopeName] = Object.create(null);
+          Object.keys(activeDetails['activeVersions'][scopeName]).sort().forEach((componentName) => {
+            sortedActiveVersions[scopeName][componentName] = activeDetails['activeVersions'][scopeName][componentName];
+          });
+        });
+
+        const sortedActiveDetails = Object.create(null);
+        sortedActiveDetails['activeVersions'] = sortedActiveVersions;
+        save(sortedActiveDetails, (err, savedDetails) => {
           if (err) {
             console.log('Error while saving active versions');
             callback(err);
