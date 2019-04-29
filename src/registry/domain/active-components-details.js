@@ -87,7 +87,7 @@ module.exports = (conf, cdn) => {
         const sortedActiveVersions = Object.create(null);
         const nonDefaultEndPointScopes = /^(imc-.*|hx-.*|ucsm-.*|ucsd-.*)$/i;
         Object.keys(activeDetails['activeVersions']).sort((a, b) => {
-          console.info('Inside the custom compare of scopes - a: ', a, ', b: ', b);
+          console.info('Inside the custom compare of scopes - a:', a, 'b:', b);
           if (a === 'default') {
             return -1;
           } else if (nonDefaultEndPointScopes.test(a) && !nonDefaultEndPointScopes.test(b)) {
