@@ -23,6 +23,8 @@ module.exports.bind = function(app, options) {
 
   app.use(requestHandler());
   app.use(bodyParser.json({ inflate: true }));
+  app.use(bodyParser.json({ type: 'application/json' }));
+  app.use(bodyParser.json({ type: 'application/csp-report' }));
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(modules.cors ? modules.cors : cors);
   app.use(fileUploads);
