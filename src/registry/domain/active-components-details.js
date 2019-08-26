@@ -1,12 +1,13 @@
 // Cisco Starship Patch - START //
+
 'use strict';
 
 const async = require('async');
 const _ = require('lodash');
+const getUnixUTCTimestamp = require('oc-get-unix-utc-timestamp');
 const strings = require('../../resources');
 
 const eventsHandler = require('./events-handler');
-const getUnixUTCTimestamp = require('oc-get-unix-utc-timestamp');
 
 module.exports = (conf, cdn) => {
   const returnError = (code, message, callback) => {
@@ -14,8 +15,7 @@ module.exports = (conf, cdn) => {
     return callback(code);
   };
 
-  const filePath = () =>
-    `${conf.s3.componentsDir}/active-components-details.json`;
+  const filePath = () => `${conf.s3.componentsDir}/active-components-details.json`;
 
   const getFromJson = callback => cdn.getJson(filePath(), true, callback);
 
@@ -53,59 +53,58 @@ module.exports = (conf, cdn) => {
           done
         );
       },
-      err =>
-        callback(err, {
+      err => callback(err, {
           lastEdit: getUnixUTCTimestamp(),
           components: details.components
         })
     );
   };
 
-  const save = (data, callback) =>
-    cdn.putFileContent(JSON.stringify(data), filePath(), true, callback);
+  const save = (data, callback) => cdn.putFileContent(JSON.stringify(data), filePath(), true, callback);
 
   const activateComponent = (data, callback) => {
     try {
       const jsonStrData = JSON.stringify(data);
       const componentsData = JSON.parse(jsonStrData);
-      const desiredScope = componentsData['scope'];
-      const components = componentsData['components'];
+      const desiredScope = componentsData.scope;
+      const components = componentsData.components;
 
       getFromJson((jsonErr, details) => {
         if (jsonErr) {
           return callback(jsonErr);
         }
         const activeDetails = details;
-        if (!activeDetails['activeVersions'][desiredScope]) {
-          activeDetails['activeVersions'][desiredScope] = {};
+        if (!activeDetails.activeVersions[desiredScope]) {
+          activeDetails.activeVersions[desiredScope] = {};
         }
         _.forEach(components, (component, i) => {
-          activeDetails['activeVersions'][desiredScope][component['name']] =
-            component['version'];
+          activeDetails.activeVersions[desiredScope][component.name] = component.version;
         });
-        //activeDetails.activeVersions[scope][componentName] = componentVersion;
+        // activeDetails.activeVersions[scope][componentName] = componentVersion;
         const sortedActiveVersions = Object.create(null);
         const nonDefaultEndPointScopes = /^(imc-.*|hx-.*|ucsm-.*|ucsd-.*)$/i;
-        Object.keys(activeDetails['activeVersions']).sort((a, b) => {
+        Object.keys(activeDetails.activeVersions).sort((a, b) => {
           console.info('Inside the custom compare of scopes - a:', a, 'b:', b);
           if (a === 'default') {
             return -1;
-          } else if (nonDefaultEndPointScopes.test(a) && !nonDefaultEndPointScopes.test(b)) {
+          } if (nonDefaultEndPointScopes.test(a) && !nonDefaultEndPointScopes.test(b)) {
             return -1;
           } else if (!nonDefaultEndPointScopes.test(a) && nonDefaultEndPointScopes.test(b)) {
             return 1;
           } else {
-            return a.localeCompare(b);
+            // Let's keep the non-default and non-endpoint packages in their chronological order of publish
+            return 0;
+            // return a.localeCompare(b);
           }
-        }).forEach(scopeName => {
+        }).forEach((scopeName) => {
           sortedActiveVersions[scopeName] = Object.create(null);
-          Object.keys(activeDetails['activeVersions'][scopeName]).sort().forEach((componentName) => {
-            sortedActiveVersions[scopeName][componentName] = activeDetails['activeVersions'][scopeName][componentName];
+          Object.keys(activeDetails.activeVersions[scopeName]).sort().forEach((componentName) => {
+            sortedActiveVersions[scopeName][componentName] = activeDetails.activeVersions[scopeName][componentName];
           });
         });
 
         const sortedActiveDetails = Object.create(null);
-        sortedActiveDetails['activeVersions'] = sortedActiveVersions;
+        sortedActiveDetails.activeVersions = sortedActiveVersions;
         save(sortedActiveDetails, (err, savedDetails) => {
           if (err) {
             console.log('Error while saving active versions');
@@ -128,10 +127,10 @@ module.exports = (conf, cdn) => {
           return callback(jsonErr);
         }
         if (
-          activeDetails['activeVersions'] &&
-          activeDetails['activeVersions'][scopeName]
+          activeDetails.activeVersions
+          && activeDetails.activeVersions[scopeName]
         ) {
-          delete activeDetails['activeVersions'][scopeName];
+          delete activeDetails.activeVersions[scopeName];
         }
         save(activeDetails, (err, savedDetails) => {
           if (err) {
@@ -156,11 +155,10 @@ module.exports = (conf, cdn) => {
         return;
       }
       if (
-        details.activeVersions[scope] &&
-        details.activeVersions[scope][componentName]
-      )
-        activeVersion = details.activeVersions[scope][componentName];
-      else activeVersion = details.activeVersions['default'][componentName];
+        details.activeVersions[scope]
+        && details.activeVersions[scope][componentName]
+      ) {activeVersion = details.activeVersions[scope][componentName];}
+      else activeVersion = details.activeVersions.default[componentName];
       callback(activeVersion);
     });
     return activeVersion;
@@ -189,13 +187,13 @@ module.exports = (conf, cdn) => {
     });
   };
 
-  //const activeComponents = '{ "activeVersions": {"default": {"an-shell":"1.0.1-333","an-dejavu":"1.0.1-333","an-barracuda":"1.0.1-13322" },"latest": {"an-shell":"1.0.1-335","an-dejavu":"1.0.1-335","an-barracuda":"1.0.1-13325"},"sokathav": {"an-shell":"1.0.1-335","an-dejavu":"1.0.1-335","an-barracuda":"1.0.1-13322" },"i18n_beta": {}}}';
+  // const activeComponents = '{ "activeVersions": {"default": {"an-shell":"1.0.1-333","an-dejavu":"1.0.1-333","an-barracuda":"1.0.1-13322" },"latest": {"an-shell":"1.0.1-335","an-dejavu":"1.0.1-335","an-barracuda":"1.0.1-13325"},"sokathav": {"an-shell":"1.0.1-335","an-dejavu":"1.0.1-335","an-barracuda":"1.0.1-13322" },"i18n_beta": {}}}';
   const activeComponents = '{ "activeVersions": {"default": {}}}';
 
   const load = (componentsList, callback) => {
     getFromJson((jsonErr, details) => {
       if (jsonErr && jsonErr.code == strings.errors.s3.FILE_NOT_FOUND_CODE) {
-        save(JSON.parse(activeComponents), saveErr => {
+        save(JSON.parse(activeComponents), (saveErr) => {
           if (saveErr) {
             return returnError(
               'active_components_details_save',
@@ -213,9 +211,9 @@ module.exports = (conf, cdn) => {
 
   return {
     get: getFromJson,
-    load: load,
+    load,
     activate: activateComponent,
-    deleteScope: deleteScope,
+    deleteScope,
     getActiveVersion: getActiveComponentVersion,
     refresh
   };
