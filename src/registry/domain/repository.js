@@ -367,6 +367,13 @@ module.exports = function(conf) {
         callback
       );
     },
+    getStaticCDNPath: () => {
+      let s3Path = conf.s3.path;
+      if (!s3Path.startsWith('http')) {
+        s3Path = 'https:' + s3Path;
+      }
+      return `${s3Path}${conf.s3.componentsDir}/`;
+    },
     getStaticClientPath: () => {
       let s3Path = conf.s3.path;
       if (!s3Path.startsWith('http')) {
