@@ -87,7 +87,9 @@ module.exports = (conf, cdn) => {
           console.info('Inside the custom compare of scopes - a:', a, 'b:', b);
           if (a === 'default') {
             return -1;
-          } if (nonDefaultEndPointScopes.test(a) && !nonDefaultEndPointScopes.test(b)) {
+          } else if (a === 'default-canary') {
+            return -1;
+          } else if (nonDefaultEndPointScopes.test(a) && !nonDefaultEndPointScopes.test(b)) {
             return -1;
           } else if (!nonDefaultEndPointScopes.test(a) && nonDefaultEndPointScopes.test(b)) {
             return 1;
