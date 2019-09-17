@@ -8,6 +8,8 @@ const validator = require('../domain/validators');
 
 module.exports = function(repository) {
   return function(req, res) {
+    console.log('inside publish route: ', req.params.componentName);
+    console.error('inside publish route: ', req.params.componentName);
     if (!req.params.componentName || !req.params.componentVersion) {
       res.errorDetails = 'malformed request';
       return res.status(409).json({ error: res.errorDetails });
@@ -52,6 +54,7 @@ module.exports = function(repository) {
     }
 
     extractPackage(req.files, (err, pkgDetails) => {
+      console.error('1 inside publish route: ', pkgDetails);
       if (err) {
         res.errorDetails = format('Package is not valid: {0}', err);
         return res
