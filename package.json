@@ -76,7 +76,7 @@
     "nice-cache": "0.0.5",
     "node-dir": "0.1.17",
     "npm": "6.11.3",
-    "oc-client": "2.1.33",
+    "oc-client": "3.2.4",
     "oc-client-browser": "CiscoM31/oc-client-browser#starship-20190826",
     "oc-get-unix-utc-timestamp": "1.0.1",
     "oc-template-handlebars": "6.0.15",
